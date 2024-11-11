@@ -19,11 +19,17 @@ reddit = praw.Reddit(
 """
 # הגדרת תתי-הפורומים לחיפוש
 subreddits = ["BabyBumps", "PregnancyUK", "AskDocs", "NICUParents"]  # תתי-פורומים רלוונטיים
-keywords = ["stress during pregnancy", "birth weight", "gestational age", "birth experience"]  # מילות מפתח רלוונטיות
+# מילות מפתח שמתמקדות בשבוע הלידה ובסיכון ללידה מוקדמת או מאוחרת
+keywords = [
+    "preterm birth", "premature birth", "early delivery",
+    "NICU stay", "born early", "gestational age",
+    "week of birth", "weeks pregnant", "full term birth", "late delivery"
+]
 
-# תאריכים לפני ואחרי תחילת מגפת הקורונה
-pre_covid_date = "2019-01-01"  # תאריך התחלתי לתקופה לפני הקורונה
-post_covid_date = "2020-03-01"  # תאריך התחלתי לתקופה אחרי פרוץ הקורונה
+# הגדרת התקופות (לפני המחאות ובמהלך המחאות)
+pre_blm_date = "2020-01-01"  # תקופה שלפני המחאות
+blm_start_date = "2020-05-01"  # תחילת המחאות
+blm_end_date = "2020-12-31"  # סיום המחאות
 
 # פונקציה לאיסוף פוסטים בתקופות שונות
 def collect_posts(subreddit, keyword, start_date, end_date, limit=500):
@@ -42,26 +48,26 @@ def collect_posts(subreddit, keyword, start_date, end_date, limit=500):
             })
     return posts
 
-# איסוף פוסטים לפני הקורונה ושמירתם בקובץ נפרד
-pre_covid_posts = []
+# איסוף פוסטים לפני המחאות ושמירתם בקובץ נפרד
+pre_blm_posts = []
 for subreddit_name in subreddits:
     subreddit = reddit.subreddit(subreddit_name)
     for keyword in keywords:
-        pre_covid_posts.extend(collect_posts(subreddit, keyword, "2019-01-01", "2019-12-31", limit=250))
+        pre_blm_posts.extend(collect_posts(subreddit, keyword, pre_blm_date, "2020-04-30", limit=250))
 
-# יצירת DataFrame ושמירתו כ-CSV לפני הקורונה
-df_pre_covid = pd.DataFrame(pre_covid_posts)
-df_pre_covid.to_csv("pregnancy_birth_outcomes_pre_covid.csv", index=False)
-print("Data saved to pregnancy_birth_outcomes_pre_covid.csv")
+# יצירת DataFrame ושמירתו כ-CSV לפני המחאות
+df_pre_blm = pd.DataFrame(pre_blm_posts)
+df_pre_blm.to_csv("pregnancy_birth_outcomes_pre_blm.csv", index=False)
+print("Data saved to pregnancy_birth_outcomes_pre_blm.csv")
 
-# איסוף פוסטים במהלך הקורונה ושמירתם בקובץ נפרד
-post_covid_posts = []
+# איסוף פוסטים במהלך המחאות ושמירתם בקובץ נפרד
+post_blm_posts = []
 for subreddit_name in subreddits:
     subreddit = reddit.subreddit(subreddit_name)
     for keyword in keywords:
-        post_covid_posts.extend(collect_posts(subreddit, keyword, "2020-03-01", "2021-12-31", limit=250))
+        post_blm_posts.extend(collect_posts(subreddit, keyword, blm_start_date, blm_end_date, limit=250))
 
-# יצירת DataFrame ושמירתו כ-CSV במהלך הקורונה
-df_post_covid = pd.DataFrame(post_covid_posts)
-df_post_covid.to_csv("pregnancy_birth_outcomes_post_covid.csv", index=False)
-print("Data saved to pregnancy_birth_outcomes_post_covid.csv")
+# יצירת DataFrame ושמירתו כ-CSV במהלך המחאות
+df_post_blm = pd.DataFrame(post_blm_posts)
+df_post_blm.to_csv("pregnancy_birth_outcomes_post_blm.csv", index=False)
+print("Data saved to pregnancy_birth_outcomes_post_blm.csv")
