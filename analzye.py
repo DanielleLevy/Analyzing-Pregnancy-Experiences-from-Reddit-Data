@@ -3,7 +3,7 @@ import pandas as pd
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, ttest_ind
 # פונקציה למיון קובץ ה-CSV לפי אורך המילים ולהוספת עמודות לשאלות
 
 def process_csv(file_path):
@@ -248,7 +248,201 @@ def plot_stress_density(file_path, stress_column, period_column, output_density_
     # Save the plot
     plt.savefig(output_density_path)
     plt.show()
-# Main function
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import pearsonr, ttest_ind
+
+def analyze_and_plot(file_path, col1, col2, output_plot_path):
+    # Load your dataset
+    data = pd.read_csv(file_path)
+
+    # Ensure columns are numeric
+    data[col1] = pd.to_numeric(data[col1], errors='coerce')
+    data[col2] = pd.to_numeric(data[col2], errors='coerce')
+
+    # Drop rows with missing values in the selected columns
+    data_cleaned = data.dropna(subset=[col1, col2])
+
+    # Calculate Pearson correlation
+    correlation, p_value = pearsonr(data_cleaned[col1], data_cleaned[col2])
+
+    # Print correlation results
+    print(f"Pearson correlation coefficient: {correlation}")
+    print(f"P-value: {p_value}")
+    print(f"Number of data points: {len(data_cleaned)}")
+
+    # Plot the relationship
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x=data_cleaned[col1], y=data_cleaned[col2], alpha=0.7)
+    plt.title("Relationship Between Stress Intensity and Emotional Overload", fontsize=16)
+    plt.xlabel(col1)
+    plt.ylabel(col2)
+    plt.grid(True)
+
+    # Add legend with statistics
+    stats_text = f"Pearson r: {correlation:.2f}\nP-value: {p_value:.2e}\nData Points: {len(data_cleaned)}"
+    plt.gca().text(0.95, 0.05, stats_text, fontsize=10, color='black',
+                   ha='right', va='bottom', transform=plt.gca().transAxes,
+                   bbox=dict(facecolor='white', alpha=0.8, edgecolor='gray'))
+
+    # Save the plot
+    plt.savefig(output_plot_path)
+    plt.show()
+
+def combine_columns_with_average(file_path, col1, col2, new_col_name):
+    # Load your dataset
+    data = pd.read_csv(file_path)
+
+    # Ensure columns are numeric
+    data[col1] = pd.to_numeric(data[col1], errors='coerce')
+    data[col2] = pd.to_numeric(data[col2], errors='coerce')
+
+    # Create a new column with the average of the two columns
+    data[new_col_name] = data[[col1, col2]].mean(axis=1)
+
+    # Save the updated dataset in the same file
+    data.to_csv(file_path, index=False)
+    print(f"Updated dataset with combined column '{new_col_name}' saved to the same file: {file_path}")
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import pearsonr, ttest_ind
+
+def analyze_and_plot(file_path, col1, col2, output_plot_path):
+    # Load your dataset
+    data = pd.read_csv(file_path)
+
+    # Ensure columns are numeric
+    data[col1] = pd.to_numeric(data[col1], errors='coerce')
+    data[col2] = pd.to_numeric(data[col2], errors='coerce')
+
+    # Drop rows with missing values in the selected columns
+    data_cleaned = data.dropna(subset=[col1, col2])
+
+    # Calculate Pearson correlation
+    correlation, p_value = pearsonr(data_cleaned[col1], data_cleaned[col2])
+
+    # Print correlation results
+    print(f"Pearson correlation coefficient: {correlation}")
+    print(f"P-value: {p_value}")
+    print(f"Number of data points: {len(data_cleaned)}")
+
+    # Plot the relationship
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x=data_cleaned[col1], y=data_cleaned[col2], alpha=0.7)
+    plt.title("Relationship Between Stress Intensity and Emotional Overload", fontsize=16)
+    plt.xlabel(col1)
+    plt.ylabel(col2)
+    plt.grid(True)
+
+    # Add legend with statistics
+    stats_text = f"Pearson r: {correlation:.2f}\nP-value: {p_value:.2e}\nData Points: {len(data_cleaned)}"
+    plt.gca().text(0.95, 0.05, stats_text, fontsize=10, color='black',
+                   ha='right', va='bottom', transform=plt.gca().transAxes,
+                   bbox=dict(facecolor='white', alpha=0.8, edgecolor='gray'))
+
+    # Save the plot
+    plt.savefig(output_plot_path)
+    plt.show()
+
+def combine_columns_with_average(file_path, col1, col2, new_col_name):
+    # Load your dataset
+    data = pd.read_csv(file_path)
+
+    # Ensure columns are numeric
+    data[col1] = pd.to_numeric(data[col1], errors='coerce')
+    data[col2] = pd.to_numeric(data[col2], errors='coerce')
+
+    # Create a new column with the average of the two columns
+    data[new_col_name] = data[[col1, col2]].mean(axis=1)
+
+    # Save the updated dataset in the same file
+    data.to_csv(file_path, index=False)
+    print(f"Updated dataset with combined column '{new_col_name}' saved to the same file: {file_path}")
+
+def plot_stress_density(file_path, stress_column, period_column, output_density_path):
+    # Load your dataset
+    data = pd.read_csv(file_path)
+
+    # Ensure relevant columns exist and are numeric
+    data[stress_column] = pd.to_numeric(data[stress_column], errors='coerce')
+    data[period_column] = data[period_column].astype(str)
+
+    # Drop rows with missing values in the required columns
+    data_cleaned = data.dropna(subset=[stress_column, period_column])
+
+    # Plot density
+    plt.figure(figsize=(12, 6))
+    sns.kdeplot(data=data_cleaned, x=stress_column, hue=period_column, fill=True, common_norm=False, alpha=0.5, palette={"PRE": "blue", "POST": "orange"})
+
+    plt.title('Stress Levels Before and During Protests (Density Plot)', fontsize=16)
+    plt.xlabel('Stress Level', fontsize=14)
+    plt.ylabel('Density', fontsize=14)
+    plt.legend(title='Period', labels=['Before Protests', 'During Protests'], fontsize=12)
+
+    # Add T-test result to the plot
+    t_stat, p_value = ttest_ind(
+        data_cleaned[data_cleaned[period_column] == 'PRE'][stress_column],
+        data_cleaned[data_cleaned[period_column] == 'POST'][stress_column],
+        equal_var=False
+    )
+    stats_text = f"T-test results:\nT-statistic: {t_stat:.2f}\nP-value: {p_value:.2e}"
+    plt.gca().text(0.95, 0.05, stats_text, fontsize=10, color='black',
+                   ha='right', va='bottom', transform=plt.gca().transAxes,
+                   bbox=dict(facecolor='white', alpha=0.8, edgecolor='gray'))
+
+    plt.grid(True)
+
+    # Save the plot
+    plt.savefig(output_density_path)
+    plt.show()
+
+
+
+
+def perform_ttest(file_path, stress_column, period_column):
+    # Load your dataset
+    data = pd.read_csv(file_path)
+
+    # Ensure relevant columns exist and are numeric
+    data[stress_column] = pd.to_numeric(data[stress_column], errors='coerce')
+    data[period_column] = data[period_column].astype(str)
+
+    # Drop rows with missing values in the required columns
+    data_cleaned = data.dropna(subset=[stress_column, period_column])
+
+    # Separate data into two groups
+    pre_data = data_cleaned[data_cleaned[period_column] == 'PRE'][stress_column]
+    post_data = data_cleaned[data_cleaned[period_column] == 'POST'][stress_column]
+
+    # Perform t-test
+    t_stat, p_value = ttest_ind(pre_data, post_data, equal_var=False)
+
+    # Print results
+    print(f"T-test results:\nT-statistic: {t_stat:.2f}\nP-value: {p_value:.2e}")
+
+    # Visualize results
+    plt.figure(figsize=(8, 5))
+    sns.barplot(x=["Before Protests", "During Protests"], y=[pre_data.mean(), post_data.mean()], palette=["blue", "orange"])
+    plt.title("Average Stress Levels Before and During Protests", fontsize=16)
+    plt.ylabel("Average Stress Level", fontsize=14)
+    plt.xlabel("Period", fontsize=14)
+    plt.text(0, pre_data.mean(), f"Mean: {pre_data.mean():.2f}", ha='center', va='bottom', fontsize=12)
+    plt.text(1, post_data.mean(), f"Mean: {post_data.mean():.2f}", ha='center', va='bottom', fontsize=12)
+
+    # Add T-test result
+    plt.figtext(0.5, -0.1, f"T-test: T-statistic = {t_stat:.2f}, P-value = {p_value:.2e}", wrap=True, horizontalalignment='center', fontsize=12)
+
+    plt.grid(axis='y')
+
+    # Save the bar plot
+    plt.savefig("ttest_stress_comparison.png")
+    plt.show()
+
 if __name__ == "__main__":
     # Define file path and columns to analyze
     file_path = 'llm_ready_dataset_labeled.csv'
@@ -267,3 +461,5 @@ if __name__ == "__main__":
     period_column = 'Source'
     output_histogram_path = "stress_histogram_by_period.png"
     plot_stress_density(file_path, stress_column, period_column, output_histogram_path)
+    # Perform T-test for stress levels by period
+    perform_ttest(file_path, stress_column, period_column)
