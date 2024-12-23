@@ -210,7 +210,20 @@ def analyze_and_plot(file_path, col1, col2, output_plot_path):
     plt.savefig(output_plot_path)
     plt.show()
 
+def combine_columns_with_average(file_path, col1, col2, new_col_name):
+    # Load your dataset
+    data = pd.read_csv(file_path)
 
+    # Ensure columns are numeric
+    data[col1] = pd.to_numeric(data[col1], errors='coerce')
+    data[col2] = pd.to_numeric(data[col2], errors='coerce')
+
+    # Create a new column with the average of the two columns
+    data[new_col_name] = data[[col1, col2]].mean(axis=1)
+
+    # Save the updated dataset in the same file
+    data.to_csv(file_path, index=False)
+    print(f"Updated dataset with combined column '{new_col_name}' saved to the same file: {file_path}")
 # Main function
 if __name__ == "__main__":
     # Define file path and columns to analyze
@@ -220,4 +233,8 @@ if __name__ == "__main__":
     output_plot_path = "scatter_plot_stress_vs_emotional_overload.png"
 
     # Call the analysis function
-    analyze_and_plot(file_path, col1, col2, output_plot_path)
+    #analyze_and_plot(file_path, col1, col2, output_plot_path)
+# Combine columns with average
+    # Combine columns with average
+    new_col_name = 'Average Stress and Emotional Overload'
+    combine_columns_with_average(file_path, col1, col2, new_col_name)
