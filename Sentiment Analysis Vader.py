@@ -4,6 +4,10 @@ import seaborn as sns
 from scipy.stats import pearsonr, ttest_ind
 from nltk.sentiment import SentimentIntensityAnalyzer
 from nltk import download
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from collections import Counter
+from nltk.util import ngrams
 
 
 def load_and_preprocess_data(file_path):
@@ -63,17 +67,81 @@ def plot_sentiment_vs_stress(data, sentiment_column, stress_column, output_file)
     plt.show()
 
 
-def plot_sentiment_distribution_by_stress(data, sentiment_column, stress_column, output_file):
-    # Categorize stress levels into low, medium, high
-    bins = [0, 3, 6, 10]
-    labels = ['Low', 'Medium', 'High']
-    data['Stress_Category'] = pd.cut(data[stress_column], bins=bins, labels=labels, include_lowest=True)
+def analyze_tfidf(data, text_column, output_file):
+    vectorizer = TfidfVectorizer(max_features=20, stop_words='english')
+    tfidf_matrix = vectorizer.fit_transform(data[text_column])
+    tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
 
-    plt.figure(figsize=(12, 6))
-    sns.boxplot(data=data, x='Stress_Category', y=sentiment_column, palette='coolwarm')
-    plt.title(f'{sentiment_column.capitalize()} Sentiment by Stress Levels', fontsize=16)
+    # Summarize the TF-IDF scores
+    tfidf_scores = tfidf_df.sum().sort_values(ascending=False)
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=tfidf_scores.values, y=tfidf_scores.index, palette='viridis')
+    plt.title('Top 20 TF-IDF Words', fontsize=16)
+    plt.xlabel('TF-IDF Score', fontsize=14)
+    plt.ylabel('Words', fontsize=14)
+    plt.grid(True)
+    plt.savefig(output_file)
+    plt.show()
+
+
+def analyze_ngrams(data, text_column, n, output_file):
+    # Generate n-grams and count their frequencies
+    all_text = ' '.join(data[text_column].dropna().values)
+    ngram_counts = Counter(ngrams(all_text.split(), n))
+    most_common = ngram_counts.most_common(20)
+
+    # Prepare data for plotting
+    ngrams_list, counts = zip(*most_common)
+    ngrams_strings = [' '.join(ngram) for ngram in ngrams_list]
+
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=counts, y=ngrams_strings, palette='coolwarm')
+    plt.title(f'Top {n}-grams', fontsize=16)
+    plt.xlabel('Frequency', fontsize=14)
+    plt.ylabel('N-grams', fontsize=14)
+    plt.grid(True)
+    plt.savefig(output_file)
+    plt.show()
+
+
+def analyze_similarity_by_stress(data, text_column, stress_column, output_file):
+    vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = vectorizer.fit_transform(data[text_column].dropna())
+    similarity_matrix = cosine_similarity(tfidf_matrix)
+
+    # Calculate average similarity for each stress category
+    data['Stress_Category'] = pd.cut(data[stress_column], bins=[0, 3, 6, 10], labels=['Low', 'Medium', 'High'],
+                                     include_lowest=True)
+    avg_similarities = []
+    categories = data['Stress_Category'].unique()
+    for category in categories:
+        indices = data[data['Stress_Category'] == category].index
+        avg_similarity = similarity_matrix[indices][:, indices].mean()
+        avg_similarities.append(avg_similarity)
+
+    # Plot average similarities
+    plt.figure(figsize=(8, 6))
+    sns.barplot(x=categories, y=avg_similarities, palette='magma')
+    plt.title('Average Text Similarity by Stress Levels', fontsize=16)
     plt.xlabel('Stress Levels', fontsize=14)
-    plt.ylabel(sentiment_column.capitalize(), fontsize=14)
+    plt.ylabel('Average Similarity', fontsize=14)
+    plt.grid(True)
+    plt.savefig(output_file)
+    plt.show()
+
+
+def analyze_punctuation(data, text_column, output_file):
+    punctuation_counts = {
+        'Exclamation Marks': data[text_column].str.count('!').sum(),
+        'Question Marks': data[text_column].str.count('\?').sum(),
+        'Emojis': data[text_column].str.count(r'[\U0001F600-\U0001F64F]').sum()
+    }
+
+    plt.figure(figsize=(8, 6))
+    sns.barplot(x=list(punctuation_counts.values()), y=list(punctuation_counts.keys()), palette='plasma')
+    plt.title('Punctuation and Emoji Usage', fontsize=16)
+    plt.xlabel('Counts', fontsize=14)
+    plt.ylabel('Type', fontsize=14)
     plt.grid(True)
     plt.savefig(output_file)
     plt.show()
@@ -91,21 +159,20 @@ def main(file_path):
     data_with_sentiment.to_csv(output_file, index=False)
     print(f"Sentiment analysis completed. Data saved to {output_file}")
 
-    # Calculate statistics and print
-    stats_text = calculate_statistics(data_with_sentiment)
-    print(stats_text)
+    # Analyze and plot TF-IDF
+    analyze_tfidf(data, 'text', 'tfidf_top_words.png')
 
-    # Plot and save relationships between sentiment and stress level
-    plot_sentiment_vs_stress(data_with_sentiment, 'pos', 'Average Stress and Emotional Overload',
-                             'positive_vs_stress.png')
-    plot_sentiment_vs_stress(data_with_sentiment, 'neg', 'Average Stress and Emotional Overload',
-                             'negative_vs_stress.png')
+    # Analyze and plot bigrams
+    analyze_ngrams(data, 'text', 2, 'bigrams_top.png')
 
-    # Plot sentiment distribution by stress levels
-    plot_sentiment_distribution_by_stress(data_with_sentiment, 'pos', 'Average Stress and Emotional Overload',
-                                          'positive_sentiment_distribution_by_stress.png')
-    plot_sentiment_distribution_by_stress(data_with_sentiment, 'neg', 'Average Stress and Emotional Overload',
-                                          'negative_sentiment_distribution_by_stress.png')
+    # Analyze and plot trigram frequency
+    analyze_ngrams(data, 'text', 3, 'trigrams_top.png')
+
+    # Analyze similarity by stress levels
+    analyze_similarity_by_stress(data, 'text', 'Average Stress and Emotional Overload', 'similarity_by_stress.png')
+
+    # Analyze punctuation and emoji usage
+    analyze_punctuation(data, 'text', 'punctuation_and_emoji_usage.png')
 
 
 # Example usage
