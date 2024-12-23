@@ -224,6 +224,30 @@ def combine_columns_with_average(file_path, col1, col2, new_col_name):
     # Save the updated dataset in the same file
     data.to_csv(file_path, index=False)
     print(f"Updated dataset with combined column '{new_col_name}' saved to the same file: {file_path}")
+def plot_stress_density(file_path, stress_column, period_column, output_density_path):
+    # Load your dataset
+    data = pd.read_csv(file_path)
+
+    # Ensure relevant columns exist and are numeric
+    data[stress_column] = pd.to_numeric(data[stress_column], errors='coerce')
+    data[period_column] = data[period_column].astype(str)
+
+    # Drop rows with missing values in the required columns
+    data_cleaned = data.dropna(subset=[stress_column, period_column])
+
+    # Plot density
+    plt.figure(figsize=(12, 6))
+    sns.kdeplot(data=data_cleaned, x=stress_column, hue=period_column, fill=True, common_norm=False, alpha=0.5, palette={"PRE": "blue", "POST": "orange"})
+
+    plt.title('Stress Levels Before and During Protests (Density Plot)', fontsize=16)
+    plt.xlabel('Stress Level', fontsize=14)
+    plt.ylabel('Density', fontsize=14)
+    plt.legend(title='Period', labels=['Before Protests', 'During Protests'], fontsize=12)
+    plt.grid(True)
+
+    # Save the plot
+    plt.savefig(output_density_path)
+    plt.show()
 # Main function
 if __name__ == "__main__":
     # Define file path and columns to analyze
@@ -237,4 +261,9 @@ if __name__ == "__main__":
 # Combine columns with average
     # Combine columns with average
     new_col_name = 'Average Stress and Emotional Overload'
-    combine_columns_with_average(file_path, col1, col2, new_col_name)
+    #combine_columns_with_average(file_path, col1, col2, new_col_name)
+    # Plot histogram for stress levels by period
+    stress_column = 'Average Stress and Emotional Overload'
+    period_column = 'Source'
+    output_histogram_path = "stress_histogram_by_period.png"
+    plot_stress_density(file_path, stress_column, period_column, output_histogram_path)
