@@ -147,6 +147,23 @@ def analyze_punctuation(data, text_column, output_file):
     plt.show()
 
 
+def analyze_text_length(data, text_column, stress_column, output_file):
+    data['Text_Length'] = data[text_column].str.split().str.len()
+
+    # Categorize stress levels into low, medium, high
+    data['Stress_Category'] = pd.cut(data[stress_column], bins=[0, 3, 6, 10], labels=['Low', 'Medium', 'High'],
+                                     include_lowest=True)
+
+    plt.figure(figsize=(12, 6))
+    sns.boxplot(data=data, x='Stress_Category', y='Text_Length', palette='coolwarm')
+    plt.title('Text Length by Stress Levels', fontsize=16)
+    plt.xlabel('Stress Levels', fontsize=14)
+    plt.ylabel('Text Length (Number of Words)', fontsize=14)
+    plt.grid(True)
+    plt.savefig(output_file)
+    plt.show()
+
+
 def main(file_path):
     # Load and preprocess data
     data = load_and_preprocess_data(file_path)
@@ -173,6 +190,9 @@ def main(file_path):
 
     # Analyze punctuation and emoji usage
     analyze_punctuation(data, 'text', 'punctuation_and_emoji_usage.png')
+
+    # Analyze text length by stress levels
+    analyze_text_length(data, 'text', 'Average Stress and Emotional Overload', 'text_length_by_stress.png')
 
 
 # Example usage
