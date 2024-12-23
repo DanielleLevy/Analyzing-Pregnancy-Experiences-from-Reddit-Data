@@ -1,5 +1,9 @@
 import pandas as pd
-
+# דוגמה לשימוש
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import pearsonr
 # פונקציה למיון קובץ ה-CSV לפי אורך המילים ולהוספת עמודות לשאלות
 
 def process_csv(file_path):
@@ -167,16 +171,53 @@ def add_more_pre_posts(pre_file_path, labeled_file_path, output_file_path, num_p
     print(f"Added {len(additional_pre_df)} new PRE posts to: {output_file_path}")
 
 
-# דוגמה לשימוש
+
+
+def analyze_and_plot(file_path, col1, col2, output_plot_path):
+    # Load your dataset
+    data = pd.read_csv(file_path)
+
+    # Ensure columns are numeric
+    data[col1] = pd.to_numeric(data[col1], errors='coerce')
+    data[col2] = pd.to_numeric(data[col2], errors='coerce')
+
+    # Drop rows with missing values in the selected columns
+    data_cleaned = data.dropna(subset=[col1, col2])
+
+    # Calculate Pearson correlation
+    correlation, p_value = pearsonr(data_cleaned[col1], data_cleaned[col2])
+
+    # Print correlation results
+    print(f"Pearson correlation coefficient: {correlation}")
+    print(f"P-value: {p_value}")
+    print(f"Number of data points: {len(data_cleaned)}")
+
+    # Plot the relationship
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x=data_cleaned[col1], y=data_cleaned[col2], alpha=0.7)
+    plt.title("Relationship Between Stress Intensity and Emotional Overload", fontsize=16)
+    plt.xlabel(col1)
+    plt.ylabel(col2)
+    plt.grid(True)
+
+    # Add legend with statistics
+    stats_text = f"Pearson r: {correlation:.2f}\nP-value: {p_value:.2e}\nData Points: {len(data_cleaned)}"
+    plt.gca().text(0.95, 0.05, stats_text, fontsize=20, color='black',
+                   ha='right', va='bottom', transform=plt.gca().transAxes,
+                   bbox=dict(facecolor='white', alpha=0.8, edgecolor='gray'))
+
+    # Save the plot
+    plt.savefig(output_plot_path)
+    plt.show()
+
+
+# Main function
 if __name__ == "__main__":
-    pre_file_path = "pregnancy_birth_outcomes_pre_blm.csv"  # קובץ ה-PRE
-    post_file_path = "pregnancy_birth_outcomes_post_blm.csv"  # קובץ ה-POST
-    labeled_file_path = "pregnancy_birth_outcomes_labeling_EXCEL.csv"  # קובץ הלייבלינג
-    output_file_path = "pregnancy_birth_outcomes_labeling_EXCEL.csv"  # קובץ לייבלינג מעודכן
+    # Define file path and columns to analyze
+    file_path = 'llm_ready_dataset_labeled.csv'
+    col1 = 'Stress Intensity (Model)'
+    col2 = 'Emotional Overload (Model)'
+    output_plot_path = "scatter_plot_stress_vs_emotional_overload.png"
 
-    # אינדקסים של הפוסטים הלא רלוונטיים
-    irrelevant_indices = [6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 19, 20, 21, 23, 25, 26, 28]
-
-    # החלפת פוסטים לא רלוונטיים
-    #replace_irrelevant_posts(pre_file_path, post_file_path, labeled_file_path, output_file_path, irrelevant_indices)
-    add_more_pre_posts(pre_file_path, output_file_path, output_file_path, num_posts=65)
+    # Call the analysis function
+    analyze_and_plot(file_path, col1, col2, output_plot_path)
