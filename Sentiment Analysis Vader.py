@@ -177,22 +177,23 @@ def main(file_path):
     print(f"Sentiment analysis completed. Data saved to {output_file}")
 
     # Analyze and plot TF-IDF
-    analyze_tfidf(data, 'text', 'tfidf_top_words.png')
+    analyze_tfidf(data, 'text', 'ex3graphs/tfidf_top_words.png')
 
     # Analyze and plot bigrams
-    analyze_ngrams(data, 'text', 2, 'bigrams_top.png')
+    analyze_ngrams(data, 'text', 2, 'ex3graphs/bigrams_top.png')
 
     # Analyze and plot trigram frequency
-    analyze_ngrams(data, 'text', 3, 'trigrams_top.png')
+    analyze_ngrams(data, 'text', 3, 'ex3graphs/trigrams_top.png')
 
     # Analyze similarity by stress levels
-    analyze_similarity_by_stress(data, 'text', 'Average Stress and Emotional Overload', 'similarity_by_stress.png')
+    analyze_similarity_by_stress(data, 'text', 'Average Stress and Emotional Overload',
+                                 'ex3graphs/similarity_by_stress.png')
 
     # Analyze punctuation and emoji usage
-    analyze_punctuation(data, 'text', 'punctuation_and_emoji_usage.png')
+    analyze_punctuation(data, 'text', 'ex3graphs/punctuation_and_emoji_usage.png')
 
     # Analyze text length by stress levels
-    analyze_text_length(data, 'text', 'Average Stress and Emotional Overload', 'text_length_by_stress.png')
+    analyze_text_length(data, 'text', 'Average Stress and Emotional Overload', 'ex3graphs/text_length_by_stress.png')
 
 
 # Example usage

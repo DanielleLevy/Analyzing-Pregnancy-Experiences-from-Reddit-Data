@@ -448,7 +448,7 @@ if __name__ == "__main__":
     file_path = 'llm_ready_dataset_labeled.csv'
     col1 = 'Stress Intensity (Model)'
     col2 = 'Emotional Overload (Model)'
-    output_plot_path = "scatter_plot_stress_vs_emotional_overload.png"
+    output_plot_path = "ex3graphs/scatter_plot_stress_vs_emotional_overload.png"
 
     # Call the analysis function
     #analyze_and_plot(file_path, col1, col2, output_plot_path)
@@ -459,7 +459,7 @@ if __name__ == "__main__":
     # Plot histogram for stress levels by period
     stress_column = 'Average Stress and Emotional Overload'
     period_column = 'Source'
-    output_histogram_path = "stress_histogram_by_period.png"
+    output_histogram_path = "ex3graphs/stress_histogram_by_period.png"
     plot_stress_density(file_path, stress_column, period_column, output_histogram_path)
     # Perform T-test for stress levels by period
     perform_ttest(file_path, stress_column, period_column)
